@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright 2023 Xiao Feng. All Rights Reserved.
+
+#pragma once
 #include "NativeGameplayTags.h"
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GROUP_PLAYERS)

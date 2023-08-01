@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright 2023 Xiao Feng. All Rights Reserved.
+
+#pragma once
 
 #include "Demo/Define.h"
 #include "NativeGameplayTags.h"
