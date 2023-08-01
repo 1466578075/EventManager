@@ -1,0 +1,25 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "EventManager",
+	"Description": "Low-coupling event management plugin.",
+	"Category": "Other",
+	"CreatedBy": "XiaoFeng",
+	"CreatedByURL": "https://github.com/1466578075",
+	"EngineVersion": "5.2.0",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "mailto:1466578075@qq.com",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "EventManager",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
