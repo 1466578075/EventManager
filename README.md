@@ -6,3 +6,6 @@ Low-coupling event management plugin.
 Note:不要在接口ReceiveMessage函数中调用UnregistryObject。因为在遍历过程中。
 
 注册对象不会影响GC，不取消注册会导致悬空指针。但是会在下次尝试交互时从列表中删除。所以手动调用UnRegistryObject不是必须的。
+
+接收事件对象继承EventReceiveMessageInterface接口。并实现ReceiveMessage。
+调用EventManagerSubsystem的RegistryObject注册对象。SendMessage发送事件。MessageObject数据对象
