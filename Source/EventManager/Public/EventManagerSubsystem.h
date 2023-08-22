@@ -45,6 +45,8 @@ public:
 	//并且不要在SendMessage中的逻辑调用此函数。因为SendMessage是遍历过程
 	UFUNCTION(BlueprintCallable, Category = "Manager")
 	void UnregistryObject(UObject* Object);
+	void UnregistryObject(TWeakObjectPtr<UObject>& Object);
+
 
 	/**
 	 * @brief 发送事件
@@ -64,8 +66,9 @@ private:
 	//列表不会影响对象GC释放。虽然不取消注册、不互动接收事件会导致悬空指针，降低查找效率
 	//但会在尝试调用时取消注册,避免仅注册，不使用的即可
 	//Group-Tag-Object
-	TMap<FGameplayTag,TMap<FGameplayTag,TArray<UObject*>>> RegisteredObject;
+	
+	TMap<FGameplayTag,TMap<FGameplayTag,TArray<TWeakObjectPtr<UObject>>>> RegisteredObject;
 	//两个表数据相同。新建一个表是方便通过Object获取Tag	 Object-Group-Tag
-	TMap<UObject*,TPair<FGameplayTag,FGameplayTag>> RegisteredObjectList;
+	TMap<TWeakObjectPtr<UObject>,TPair<FGameplayTag,FGameplayTag>> RegisteredObjectList;
 };
 

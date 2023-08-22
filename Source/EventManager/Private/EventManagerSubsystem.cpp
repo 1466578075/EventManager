@@ -11,7 +11,7 @@ DEFINE_LOG_CATEGORY(EventManager)
 
 void UEventManagerSubsystem::RegistryObject(FGameplayTag Group, FGameplayTag Tag, UObject* Object)
 {
-	if (!ensure(Group.IsValid() && Tag.IsValid()))
+	if (!ensure(Group.IsValid() && Tag.IsValid() && IsValid(Object)))
 	{
 		return;
 	}
@@ -35,15 +35,15 @@ void UEventManagerSubsystem::RegistryObject(FGameplayTag Group, FGameplayTag Tag
 		
 		if (!RegisteredObject.Contains(Group))
 		{
-			TArray<UObject*> Array;
+			TArray<TWeakObjectPtr<UObject>> Array;
 			Array.Add(Object);
-			TMap<FGameplayTag,TArray<UObject*>> Map ;
+			TMap<FGameplayTag,TArray<TWeakObjectPtr<UObject>>> Map ;
 			Map.Add(Tag,Array);
 			RegisteredObject.Add(Group,Map);
 		}
 		else if (!RegisteredObject.Find(Group)->Contains(Tag))
 		{
-			TArray<UObject*> Array;
+			TArray<TWeakObjectPtr<UObject>> Array;
 			Array.Add(Object);
 			RegisteredObject.Find(Group)->Add(Tag,Array);
 		}
@@ -63,6 +63,12 @@ void UEventManagerSubsystem::RegistryObject(FGameplayTag Group, FGameplayTag Tag
 
 void UEventManagerSubsystem::UnregistryObject(UObject* Object)
 {
+	auto Temp = TWeakObjectPtr<UObject>(Object);
+	UnregistryObject(Temp);
+}
+
+void UEventManagerSubsystem::UnregistryObject(TWeakObjectPtr<UObject>& Object)
+{
 	if (auto Pair = RegisteredObjectList.Find(Object))
 	{
 		if (auto Map = RegisteredObject.Find(Pair->Key))
@@ -81,12 +87,12 @@ void UEventManagerSubsystem::UnregistryObject(UObject* Object)
 			}
 		}
 		RegisteredObjectList.Remove(Object);
-		UE_LOG(EventManager,Verbose,TEXT("Subsystem:注销对象%p"),Object)
+		UE_LOG(EventManager,Verbose,TEXT("Subsystem:注销对象%p"),Object.Get())
 
 	}
 	else
 	{
-		UE_LOG(EventManager,Warning,TEXT("Subsystem:注销未找到对象%p"),Object)
+		UE_LOG(EventManager,Warning,TEXT("Subsystem:注销未找到对象%p"),Object.Get())
 	}
 }
 
@@ -100,20 +106,20 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 	if (auto Map = RegisteredObject.Find(Group))
 	{
 		//已失效的对象列表，查找完毕后取消注册。遍历过程更改数组数量会导致异常
-		TArray<UObject*> InvalidItems;
+		TArray<TWeakObjectPtr<UObject>*> InvalidItems;
 		if (MathType == Exact)
 		{
 			if (auto Items = Map->Find(Tag))
 			{
-				for (auto Item : *Items)
+				for (auto& Item : *Items)
 				{
-					if (IsValid(Item))
+					if (Item.IsValid())
 					{
-						IEventReceiveMessage::Execute_ReceiveMessage(Item,ControlSymbol,Message);
+						IEventReceiveMessage::Execute_ReceiveMessage(Item.Get(),ControlSymbol,Message);
 					}
 					else
 					{
-						InvalidItems.Add(Item);
+						InvalidItems.Add(&Item);
 					}
 				}
 			}
@@ -124,15 +130,15 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 			{
 				if (TagPairIt->Key.MatchesTag(Tag))
 				{
-					for (auto Item : TagPairIt->Value)
+					for (auto& Item : TagPairIt->Value)
 					{
-						if (IsValid(Item))
+						if (Item.IsValid())
 						{
-							IEventReceiveMessage::Execute_ReceiveMessage(Item,ControlSymbol,Message);
+							IEventReceiveMessage::Execute_ReceiveMessage(Item.Get(),ControlSymbol,Message);
 						}
 						else
 						{
-							InvalidItems.Add(Item);
+							InvalidItems.Add(&Item);
 						}
 					}
 				}
@@ -141,7 +147,7 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 		//删除已经失效的对象
 		for (auto InvalidItem :InvalidItems)
 		{
-			UnregistryObject(InvalidItem);
+			UnregistryObject(*InvalidItem);
 		}
 	}
 }
