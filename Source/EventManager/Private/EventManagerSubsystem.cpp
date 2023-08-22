@@ -103,10 +103,11 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 	{
 		return;
 	}
+	//已失效的对象列表，查找完毕后取消注册。遍历过程更改数组数量会导致异常
+	TArray<TWeakObjectPtr<UObject>> InvalidItems;
 	if (auto Map = RegisteredObject.Find(Group))
 	{
-		//已失效的对象列表，查找完毕后取消注册。遍历过程更改数组数量会导致异常
-		TArray<TWeakObjectPtr<UObject>*> InvalidItems;
+
 		if (MathType == Exact)
 		{
 			if (auto Items = Map->Find(Tag))
@@ -119,7 +120,7 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 					}
 					else
 					{
-						InvalidItems.Add(&Item);
+						InvalidItems.Add(Item);
 					}
 				}
 			}
@@ -138,17 +139,17 @@ void UEventManagerSubsystem::SendMessage(FGameplayTag Group, FGameplayTag Tag, E
 						}
 						else
 						{
-							InvalidItems.Add(&Item);
+							InvalidItems.Add(Item);
 						}
 					}
 				}
 			}
 		}
-		//删除已经失效的对象
-		for (auto InvalidItem :InvalidItems)
-		{
-			UnregistryObject(*InvalidItem);
-		}
+	}
+	//删除已经失效的对象
+	for (auto InvalidItem :InvalidItems)
+	{
+		UnregistryObject(InvalidItem);
 	}
 }
 
